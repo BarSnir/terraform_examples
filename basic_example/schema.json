@@ -1,0 +1,13 @@
+{
+    "properties": {
+      "message": {
+        "example": "Hello, world!",
+        "type": "string"
+      },
+      "second_field": {
+        "example": "Hello, world 2!",
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }
