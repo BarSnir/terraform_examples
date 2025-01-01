@@ -1,4 +1,4 @@
 curl --request GET \
   --url 'https://api.confluent.cloud/iam/v2/api-keys/{api_key_id}' \
-  --header 'Authorization: Basic {base64_encoded_api_key_and_secret}' \
+  --header 'Authorization: Basic NlRGSkUzWVFRNkkzUkpLNTpaVW5wbU1STDFsOWUxT1dUUmpSWndOK0hURWk4VEdZV3EwRWNaRUtHU0JPQ241SWZycmVzUW8yUlNjVVNOaUdqCg==' \
   --header 'content-type: application/json'
