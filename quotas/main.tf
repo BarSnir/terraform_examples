@@ -37,6 +37,32 @@ resource "confluent_kafka_quota" "example" {
   egress_mbps = 4
 }
 
+resource "confluent_kafka_acl" "read_acl" {
+  kafka_cluster {
+    id = confluent_kafka_cluster.example.id
+  }
+  resource_type = "TOPIC"
+  resource_name = "*"
+  pattern_type  = "LITERAL"
+  principal     = "User:${confluent_service_account.example.id}"
+  host          = "*"
+  operation     = "READ"
+  permission    = "ALLOW"
+}
+
+resource "confluent_kafka_acl" "write_acl" {
+  kafka_cluster {
+    id = confluent_kafka_cluster.example.id
+  }
+  resource_type = "TOPIC"
+  resource_name = "*"
+  pattern_type  = "LITERAL"
+  principal     = "User:${confluent_service_account.example.id}"
+  host          = "*"
+  operation     = "WRITE"
+  permission    = "ALLOW"
+}
+
 variable "confluent_cloud_api_key" {}
 variable "confluent_cloud_api_secret" {}
 variable "confluent_environment_id" {}
