@@ -73,11 +73,16 @@ resource "confluent_api_key" "bsnir_quotas_demo_api_key" {
 # Roles binding
 #----------------------------------------------------------------
 
-resource "confluent_role_binding" "quotas_developer_manage_role" {
+resource "confluent_role_binding" "quotas_admin_role" {
   principal = "User:${confluent_service_account.bsnir_quotas_demo_sa.id}"
-  role_name = "DeveloperManage"
-  crn_pattern = "${confluent_kafka_cluster.bsnir_quotas_demo.rbac_crn}/kafka=${confluent_kafka_cluster.bsnir_quotas_demo.id}/topic=*"
+  role_name = "CloudClusterAdmin"
+  crn_pattern = confluent_kafka_cluster.bsnir_quotas_demo.rbac_crn
+}
 
+resource "confluent_role_binding" "quotas_developer_manage_role" {
+  principal   = "User:${confluent_service_account.bsnir_quotas_demo_sa.id}"
+  role_name   = "DeveloperManage"
+  crn_pattern = "${confluent_kafka_cluster.bsnir_quotas_demo.rbac_crn}/kafka=${confluent_kafka_cluster.bsnir_quotas_demo.id}/topic=*"
 }
 
 resource "confluent_role_binding" "quotas_developer_read_role" {
