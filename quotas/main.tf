@@ -152,8 +152,8 @@ resource "confluent_kafka_client_quota" "quotas_resource" {
   display_name = "quotas_resource"
   description  = "For Skai's demo"
   throughput {
-    ingress_byte_rate = "1000000"
-    egress_byte_rate  = "1000000"
+    ingress_byte_rate = "2000000"
+    egress_byte_rate  = "2000000"
   }
   principals = [confluent_service_account.bsnir_quotas_demo_sa.id]
 
@@ -164,6 +164,43 @@ resource "confluent_kafka_client_quota" "quotas_resource" {
     id = confluent_environment.bsnir_quotas_demo_env.id
   }
 
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
+#----------------------------------------------------------------
+# Topic
+#----------------------------------------------------------------
+
+resource "confluent_kafka_topic" "quotas_demo_topic" {
+  kafka_cluster {
+    id = confluent_kafka_cluster.bsnir_quotas_demo.id
+  }
+  topic_name         = "quotas_demo_topic_v1"
+  partitions_count   = 1
+  rest_endpoint      = confluent_kafka_cluster.bsnir_quotas_demo.rest_endpoint
+  credentials {
+    key    = confluent_api_key.bsnir_quotas_demo_api_key.id
+    secret = confluent_api_key.bsnir_quotas_demo_api_key.secret
+  }
+  config = {
+    "cleanup.policy"                      = "delete"
+    "delete.retention.ms"                 = "86400000"
+    "max.compaction.lag.ms"               = "9223372036854775807"
+    "max.message.bytes"                   = "5097164"
+    "message.timestamp.after.max.ms"      = "9223372036854775807"
+    "message.timestamp.before.max.ms"     = "9223372036854775807"      
+    "message.timestamp.difference.max.ms" = "9223372036854775807"
+    "message.timestamp.type"              = "CreateTime"
+    "min.compaction.lag.ms"               = "0"
+    "min.insync.replicas"                 = "2"
+    "retention.bytes"                     = "-1"
+    "retention.ms"                        = "604800000"
+    "segment.bytes"                       = "104857600"
+    "segment.ms"                          = "604800000"
+  }
+  # In production - set to true
   lifecycle {
     prevent_destroy = false
   }
