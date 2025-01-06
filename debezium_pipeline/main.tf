@@ -9,8 +9,15 @@ terraform {
     }
   }
 }
+
 # export CONFLUENT_CLOUD_API_KEY
 # export CONFLUENT_CLOUD_API_SECRET
+# export CONFLUENT_CLOUD_ORGANIZATION_ID
+# export CONFLUENT_CLOUD_ENVIRONMENT_ID="1"
+# export CONFLUENT_CLOUD_FLINK_COMPUTE_POOL_ID="1"
+# export CONFLUENT_CLOUD_FLINK_REST_ENDPOINT="1"
+# export CONFLUENT_CLOUD_FLINK_API_KEY="1"
+# export CONFLUENT_CLOUD_FLINK_API_SECRET="1"
 provider "confluent" {}
 
 
@@ -181,12 +188,80 @@ resource "confluent_connector" "bsnir_connector_debezium_flink_demo" {
     "database.hostname"        = "debezium-demo.ccctmswayzpp.eu-west-1.rds.amazonaws.com"
     "database.port"            = "3306"
     "database.user"            = "admin"
-    "table.include.list"       = "production.Vehicles"
+    "table.include.list"       = "production.Vehicles,production.Orders"
     "output.data.format"       = "AVRO",
-    "tasks.max"                = "1"
+    "tasks.max"                = "1",
+    "topic.prefix"             = "debezium_"
   }
 
   lifecycle {
-    prevent_destroy = true
+    prevent_destroy = false
   }
 }
+#----------------------------------------------------------------
+# Compute pool
+#----------------------------------------------------------------
+resource "confluent_flink_compute_pool" "bsnir_compute_pool_debezium_flink_demo" {
+  display_name     = "bsnir_compute_pool_debezium_flink_demo"
+  cloud            = "AWS"
+  region           = "eu-west-1"
+  max_cfu          = 10
+  environment {
+    id = confluent_environment.bsnir_env_debezium_flink_demo.id
+  }
+}
+
+#----------------------------------------------------------------
+# Flink statements
+#----------------------------------------------------------------
+
+# resource "confluent_flink_statement" "create_table" {
+#   environment {
+#     id = confluent_environment.bsnir_env_debezium_flink_demo.id
+#   }
+#   compute_pool {
+#     id = confluent_flink_compute_pool.bsnir_compute_pool_debezium_flink_demo.id
+#   }
+#   principal {
+#     id = confluent_service_account.bsnir_sa_debezium_flink_demo.id
+#   }
+#   statement  = "CREATE TABLE enriched_partitions_vehicles DISTRIBUTED BY (key) INTO 6 BUCKETS LIKE `debezium_.production.Vehicles` ( EXCLUDING DISTRIBUTION );"
+#   properties = {
+#     "sql.current-catalog"  = confluent_environment.bsnir_env_debezium_flink_demo.display_name
+#     "sql.current-database" = confluent_kafka_cluster.bsnir_cluster_debezium_flink_demo.display_name
+#   }
+#   rest_endpoint = confluent_kafka_cluster.bsnir_cluster_debezium_flink_demo.rest_endpoint
+#   credentials {
+#     key    = confluent_api_key.bsnir_api_key_debezium_flink_demo.id
+#     secret = confluent_api_key.bsnir_api_key_debezium_flink_demo.secret
+#   }
+
+#   lifecycle {
+#     prevent_destroy = true
+#   }
+# }
+# resource "confluent_flink_statement" "distribute_abstracts_events" {
+#   environment {
+#     id = confluent_environment.bsnir_env_debezium_flink_demo.id
+#   }
+#   compute_pool {
+#     id = confluent_flink_compute_pool.bsnir_compute_pool_debezium_flink_demo.id
+#   }
+#   principal {
+#     id = confluent_service_account.bsnir_sa_debezium_flink_demo.id
+#   }
+#   statement  = "INSERT INTO `enriched_partitions_vehicles` SELECT * FROM `debezium_.production.Vehicles`;"
+#   properties = {
+#     "sql.current-catalog"  = confluent_environment.bsnir_env_debezium_flink_demo.display_name
+#     "sql.current-database" = confluent_kafka_cluster.bsnir_cluster_debezium_flink_demo.display_name
+#   }
+#   rest_endpoint = confluent_kafka_cluster.bsnir_cluster_debezium_flink_demo.rest_endpoint
+#   credentials {
+#     key    = confluent_api_key.bsnir_api_key_debezium_flink_demo.id
+#     secret = confluent_api_key.bsnir_api_key_debezium_flink_demo.secret
+#   }
+
+#   lifecycle {
+#     prevent_destroy = true
+#   }
+# }
