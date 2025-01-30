@@ -22,6 +22,28 @@ def produce_message(key, value):
     producer.produce(TOPIC, key=key, value=value, callback=delivery_report)
     producer.poll()
 
+def produce(messages, key, value):
+
+    NUMBER_OF_MESSAGE_FOR_BATCH = 100
+
+    def delivery_report(err, msg):
+        print(f"{get_timestamp()}")
+        if err is not None:  
+            print(f"Delivery failed for record {key}: {err}")
+        else:
+            print(f"Record {key} successfully produced to {msg.topic()} [{msg.partition()}]")
+    iteration = 0
+    batch = messages[iteration:NUMBER_OF_MESSAGE_FOR_BATCH]
+    for x in batch:
+      
+      if len(x) == 0:
+         producer.flush()
+         exit()
+
+      producer.produce(TOPIC, key=x['key'], value=x['value'], callback=delivery_report)
+      iteration += NUMBER_OF_MESSAGE_FOR_BATCH
+    producer.poll()
+
 # Async wrapper for the produce_message function
 async def async_produce_message(executor, key, value):
     loop = asyncio.get_event_loop()
